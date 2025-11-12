@@ -1,0 +1,10 @@
+wwwroot\student.html
+wwwroot\login.html
+wwwroot\teacher.html
+wwwroot\admin.html
+wwwroot\index.html
+C:\Users\ADMIN\Desktop\Socket_IR\wwwroot\teacher.html
+C:\Users\ADMIN\Desktop\Socket_IR\wwwroot\index.html
+C:\Users\ADMIN\Desktop\Socket_IR\wwwroot\admin.html
+C:\Users\ADMIN\Desktop\Socket_IR\wwwroot\login.html
+C:\Users\ADMIN\Desktop\Socket_IR\wwwroot\student.html

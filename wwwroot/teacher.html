@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teacher Dashboard - Hệ thống quản lý hoạt động ngoại khóa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 2px 10px;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .activity-card {
+            transition: transform 0.2s ease;
+        }
+        .activity-card:hover {
+            transform: translateY(-2px);
+        }
+        .btn-action {
+            border-radius: 8px;
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="p-3">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="fas fa-graduation-cap fa-2x me-2"></i>
+                        <h5 class="mb-0">EduActivity</h5>
+                    </div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('activities')">
+                            <i class="fas fa-calendar-alt me-2"></i>Hoạt động của tôi
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('pending')">
+                            <i class="fas fa-clock me-2"></i>Chờ duyệt
+                            <span id="pendingBadge" class="badge bg-warning ms-2" style="display: none;">0</span>
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('reports')">
+                            <i class="fas fa-chart-bar me-2"></i>Báo cáo
+                        </a>
+                    </nav>
+                </div>
+                <div class="mt-auto p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-user-circle fa-2x me-2"></i>
+                        <div>
+                            <div id="teacherName">Teacher</div>
+                            <small class="text-muted">Giáo viên</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-light btn-sm w-100" onclick="logout()">
+                        <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="p-4">
+                    <!-- Dashboard Section -->
+                    <div id="dashboardSection">
+                        <h2 class="mb-4">Dashboard Giáo viên</h2>
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="myActivities">0</h3>
+                                                <p class="mb-0">Hoạt động của tôi</p>
+                                            </div>
+                                            <i class="fas fa-calendar-plus fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="pendingCount">0</h3>
+                                                <p class="mb-0">Chờ duyệt</p>
+                                            </div>
+                                            <i class="fas fa-user-clock fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="totalParticipants">0</h3>
+                                                <p class="mb-0">Tổng người tham gia</p>
+                                            </div>
+                                            <i class="fas fa-users fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="activeActivities">0</h3>
+                                                <p class="mb-0">Hoạt động đang diễn ra</p>
+                                            </div>
+                                            <i class="fas fa-play-circle fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activities -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Hoạt động sắp diễn ra</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="upcomingActivities">
+                                            <!-- Activities will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Thông báo</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="notifications">
+                                            <!-- Notifications will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activities Section -->
+                    <div id="activitiesSection" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2>Hoạt động của tôi</h2>
+                            <button class="btn btn-primary" onclick="showCreateActivityModal()">
+                                <i class="fas fa-plus me-1"></i>Tạo hoạt động mới
+                            </button>
+                        </div>
+                        <div class="row" id="activitiesContainer">
+                            <!-- Activities will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Pending Approvals Section -->
+                    <div id="pendingSection" style="display: none;">
+                        <h2 class="mb-4">Đăng ký chờ duyệt</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Hoạt động</th>
+                                                <th>Học sinh</th>
+                                                <th>Lớp</th>
+                                                <th>Thời gian đăng ký</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pendingTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports Section -->
+                    <div id="reportsSection" style="display: none;">
+                        <h2 class="mb-4">Báo cáo</h2>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Thống kê hoạt động</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="activityChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Thống kê tham gia</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <canvas id="participationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:8081/api';
+        let currentUser = null;
+        let authToken = null;
+        let activityChart = null;
+        let participationChart = null;
+
+        // Check authentication
+        function checkAuth() {
+            authToken = localStorage.getItem('authToken');
+            currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            if (!authToken || currentUser.role !== 'Teacher') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('teacherName').textContent = currentUser.fullName || 'Teacher';
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('activitiesSection').style.display = 'none';
+            document.getElementById('pendingSection').style.display = 'none';
+            document.getElementById('reportsSection').style.display = 'none';
+            
+            // Show selected section
+            document.getElementById(sectionName + 'Section').style.display = 'block';
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Load section data
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'activities':
+                    loadMyActivities();
+                    break;
+                case 'pending':
+                    loadPendingRegistrations();
+                    break;
+                case 'reports':
+                    loadReports();
+                    break;
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                // Load statistics from teacher-specific endpoint
+                const statsResponse = await fetch(`${API_BASE_URL}/activities/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (statsResponse.ok) {
+                    const activities = await statsResponse.json();
+                    document.getElementById('myActivities').textContent = activities.length || 0;
+                    
+                    // Calculate total participants from all activities
+                    const totalParticipants = activities.reduce((total, activity) => {
+                        return total + (activity.currentParticipants || 0);
+                    }, 0);
+                    document.getElementById('totalParticipants').textContent = totalParticipants;
+                    
+                    // Load pending registrations count
+                    const pendingResponse = await fetch(`${API_BASE_URL}/registrations/pending`, {
+                        headers: { 'Authorization': `Bearer ${authToken}` }
+                    });
+                    
+                    if (pendingResponse.ok) {
+                        const pendingRegs = await pendingResponse.json();
+                        document.getElementById('pendingCount').textContent = pendingRegs.length || 0;
+                    }
+                    
+                    // Count active activities (Open status)
+                    document.getElementById('activeActivities').textContent = activities.filter(a => a.status === 'Open').length || 0;
+                }
+
+                // Load upcoming activities
+                const activitiesResponse = await fetch(`${API_BASE_URL}/activities/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (activitiesResponse.ok) {
+                    const activities = await activitiesResponse.json();
+                    const upcomingContainer = document.getElementById('upcomingActivities');
+                    upcomingContainer.innerHTML = activities.slice(0, 5).map(activity => `
+                        <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">${activity.title}</h6>
+                                <small class="text-muted">${new Date(activity.startTime).toLocaleString('vi-VN')}</small>
+                            </div>
+                            <span class="badge bg-${activity.status === 'Active' ? 'success' : 'secondary'}">${activity.status}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Load notifications
+                loadNotifications();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadMyActivities() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/activities/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const activities = await response.json();
+                    const container = document.getElementById('activitiesContainer');
+                    container.innerHTML = activities.map(activity => `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card activity-card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">${activity.title}</h5>
+                                    <p class="card-text text-muted">${activity.description ? activity.description.substring(0, 100) + '...' : 'Không có mô tả'}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            ${new Date(activity.startTime).toLocaleDateString('vi-VN')}
+                                        </small>
+                                        <span class="badge bg-${activity.status === 'Active' ? 'success' : 'secondary'}">${activity.status}</span>
+                                    </div>
+                                    <div class="mt-3">
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewActivity(${activity.id})">
+                                            <i class="fas fa-eye me-1"></i>Xem chi tiết
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editActivity(${activity.id})">
+                                            <i class="fas fa-edit me-1"></i>Sửa
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+            }
+        }
+
+        async function loadPendingRegistrations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/pending`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const registrations = await response.json();
+                    console.log('Pending registrations:', registrations); // Debug
+                    const tbody = document.getElementById('pendingTableBody');
+                    tbody.innerHTML = registrations.map(reg => `
+                        <tr>
+                            <td>${reg.activity?.title || 'Không có tiêu đề'}</td>
+                            <td>${reg.student?.fullName || 'Không có tên'}</td>
+                            <td>${reg.student?.className || '-'}</td>
+                            <td>${new Date(reg.registrationTime).toLocaleString('vi-VN')}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-success btn-action" onclick="approveRegistration(${reg.id || reg.Id})">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger btn-action" onclick="rejectRegistration(${reg.id || reg.Id})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading pending registrations:', error);
+            }
+        }
+
+        async function approveRegistration(registrationId) {
+            if (!registrationId) {
+                alert('Lỗi: ID đăng ký không hợp lệ');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/${registrationId}/approve`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    alert('Đã duyệt đăng ký thành công!');
+                    loadPendingRegistrations();
+                    loadDashboard();
+                } else {
+                    const error = await response.text();
+                    alert('Có lỗi xảy ra khi duyệt đăng ký: ' + error);
+                }
+            } catch (error) {
+                console.error('Error approving registration:', error);
+                alert('Lỗi kết nối');
+            }
+        }
+
+        async function rejectRegistration(registrationId) {
+            if (!registrationId) {
+                alert('Lỗi: ID đăng ký không hợp lệ');
+                return;
+            }
+            
+            if (!confirm('Bạn có chắc chắn muốn từ chối đăng ký này?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/${registrationId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    alert('Đã từ chối đăng ký');
+                    loadPendingRegistrations();
+                    loadDashboard();
+                } else {
+                    const error = await response.text();
+                    alert('Có lỗi xảy ra khi từ chối đăng ký: ' + error);
+                }
+            } catch (error) {
+                console.error('Error rejecting registration:', error);
+                alert('Lỗi kết nối');
+            }
+        }
+
+        // Modal functions
+        function showCreateActivityModal() {
+            const modal = `
+                <div class="modal fade" id="createActivityModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Tạo hoạt động mới</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="createActivityForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Tiêu đề hoạt động</label>
+                                                <input type="text" class="form-control" id="activityTitle" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Danh mục</label>
+                                                <select class="form-select" id="activityCategory" required>
+                                                    <option value="">Chọn danh mục</option>
+                                                    <option value="Thể thao">Thể thao</option>
+                                                    <option value="Văn hóa">Văn hóa</option>
+                                                    <option value="Học thuật">Học thuật</option>
+                                                    <option value="Tình nguyện">Tình nguyện</option>
+                                                    <option value="Khác">Khác</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Mô tả</label>
+                                        <textarea class="form-control" id="activityDescription" rows="3"></textarea>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Thời gian bắt đầu</label>
+                                                <input type="datetime-local" class="form-control" id="activityStartTime" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Thời gian kết thúc</label>
+                                                <input type="datetime-local" class="form-control" id="activityEndTime" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Địa điểm</label>
+                                                <input type="text" class="form-control" id="activityLocation" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label">Số lượng tối đa</label>
+                                                <input type="number" class="form-control" id="activityMaxParticipants" min="1" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="activityRequireApproval" checked>
+                                            <label class="form-check-label">Yêu cầu phê duyệt</label>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="button" class="btn btn-primary" onclick="createActivity()">Tạo hoạt động</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('createActivityModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modal);
+            
+            // Show modal
+            const modalElement = new bootstrap.Modal(document.getElementById('createActivityModal'));
+            modalElement.show();
+        }
+
+        async function createActivity() {
+            const formData = {
+                title: document.getElementById('activityTitle').value,
+                description: document.getElementById('activityDescription').value,
+                category: document.getElementById('activityCategory').value,
+                startTime: document.getElementById('activityStartTime').value,
+                endTime: document.getElementById('activityEndTime').value,
+                location: document.getElementById('activityLocation').value,
+                maxParticipants: parseInt(document.getElementById('activityMaxParticipants').value),
+                requireApproval: document.getElementById('activityRequireApproval').checked
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/activities`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    alert('Tạo hoạt động thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('createActivityModal')).hide();
+                    loadMyActivities();
+                    loadDashboard();
+                } else {
+                    const error = await response.text();
+                    alert('Lỗi tạo hoạt động: ' + error);
+                }
+            } catch (error) {
+                console.error('Error creating activity:', error);
+                alert('Lỗi kết nối');
+            }
+        }
+
+        function viewActivity(activityId) {
+            // Fetch activity details and show modal
+            fetch(`${API_BASE_URL}/activities/${activityId}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+            .then(response => response.json())
+            .then(activity => {
+                const modal = `
+                    <div class="modal fade" id="viewActivityModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Chi tiết hoạt động</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h4>${activity.title}</h4>
+                                            <p class="text-muted">${activity.description || 'Không có mô tả'}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="badge bg-${activity.status === 'Active' ? 'success' : 'secondary'}">${activity.status}</span>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Danh mục:</strong> ${activity.category}</p>
+                                            <p><strong>Địa điểm:</strong> ${activity.location}</p>
+                                            <p><strong>Thời gian bắt đầu:</strong> ${new Date(activity.startTime).toLocaleString('vi-VN')}</p>
+                                            <p><strong>Thời gian kết thúc:</strong> ${new Date(activity.endTime).toLocaleString('vi-VN')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Số người tham gia:</strong> ${activity.currentParticipants}/${activity.maxParticipants}</p>
+                                            <p><strong>Yêu cầu phê duyệt:</strong> ${activity.requireApproval ? 'Có' : 'Không'}</p>
+                                            <p><strong>Ngày tạo:</strong> ${new Date(activity.createdAt).toLocaleDateString('vi-VN')}</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <h6 class="mt-4">Danh sách đăng ký</h6>
+                                    <div id="activityRegistrations">
+                                        <div class="text-center py-3">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                    <button type="button" class="btn btn-primary" onclick="editActivity(${activity.id})">Sửa hoạt động</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('viewActivityModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Add modal to body
+                document.body.insertAdjacentHTML('beforeend', modal);
+                
+                // Show modal
+                const modalElement = new bootstrap.Modal(document.getElementById('viewActivityModal'));
+                modalElement.show();
+                
+                // Load registrations
+                loadActivityRegistrations(activityId);
+            })
+            .catch(error => {
+                console.error('Error loading activity:', error);
+                alert('Lỗi tải thông tin hoạt động');
+            });
+        }
+
+        async function loadActivityRegistrations(activityId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/activity/${activityId}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const registrations = await response.json();
+                    const container = document.getElementById('activityRegistrations');
+                    
+                    if (registrations.length === 0) {
+                        container.innerHTML = '<p class="text-muted text-center">Chưa có đăng ký nào</p>';
+                        return;
+                    }
+                    
+                    container.innerHTML = `
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Học sinh</th>
+                                        <th>Lớp</th>
+                                        <th>Trạng thái</th>
+                                        <th>Thời gian đăng ký</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${registrations.map(reg => `
+                                        <tr>
+                                            <td>${reg.student?.fullName || 'Không có tên'}</td>
+                                            <td>${reg.student?.className || '-'}</td>
+                                            <td><span class="badge bg-${reg.status === 'Approved' ? 'success' : reg.status === 'Pending' ? 'warning' : 'secondary'}">${reg.status}</span></td>
+                                            <td>${new Date(reg.registrationTime).toLocaleString('vi-VN')}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading registrations:', error);
+            }
+        }
+
+        function editActivity(activityId) {
+            // Fetch activity details and show edit modal
+            fetch(`${API_BASE_URL}/activities/${activityId}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+            .then(response => response.json())
+            .then(activity => {
+                const modal = `
+                    <div class="modal fade" id="editActivityModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Sửa hoạt động</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="editActivityForm">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Tiêu đề hoạt động</label>
+                                                    <input type="text" class="form-control" id="editActivityTitle" value="${activity.title}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Danh mục</label>
+                                                    <select class="form-select" id="editActivityCategory" required>
+                                                        <option value="Thể thao" ${activity.category === 'Thể thao' ? 'selected' : ''}>Thể thao</option>
+                                                        <option value="Văn hóa" ${activity.category === 'Văn hóa' ? 'selected' : ''}>Văn hóa</option>
+                                                        <option value="Học thuật" ${activity.category === 'Học thuật' ? 'selected' : ''}>Học thuật</option>
+                                                        <option value="Tình nguyện" ${activity.category === 'Tình nguyện' ? 'selected' : ''}>Tình nguyện</option>
+                                                        <option value="Khác" ${activity.category === 'Khác' ? 'selected' : ''}>Khác</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Mô tả</label>
+                                            <textarea class="form-control" id="editActivityDescription" rows="3">${activity.description || ''}</textarea>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Thời gian bắt đầu</label>
+                                                    <input type="datetime-local" class="form-control" id="editActivityStartTime" value="${activity.startTime.slice(0, 16)}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Thời gian kết thúc</label>
+                                                    <input type="datetime-local" class="form-control" id="editActivityEndTime" value="${activity.endTime.slice(0, 16)}" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Địa điểm</label>
+                                                    <input type="text" class="form-control" id="editActivityLocation" value="${activity.location}" required>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Số lượng tối đa</label>
+                                                    <input type="number" class="form-control" id="editActivityMaxParticipants" value="${activity.maxParticipants}" min="1" required>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="editActivityRequireApproval" ${activity.requireApproval ? 'checked' : ''}>
+                                                <label class="form-check-label">Yêu cầu phê duyệt</label>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <button type="button" class="btn btn-primary" onclick="updateActivity(${activity.id})">Cập nhật</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('editActivityModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Add modal to body
+                document.body.insertAdjacentHTML('beforeend', modal);
+                
+                // Show modal
+                const modalElement = new bootstrap.Modal(document.getElementById('editActivityModal'));
+                modalElement.show();
+            })
+            .catch(error => {
+                console.error('Error loading activity:', error);
+                alert('Lỗi tải thông tin hoạt động');
+            });
+        }
+
+        async function updateActivity(activityId) {
+            const formData = {
+                title: document.getElementById('editActivityTitle').value,
+                description: document.getElementById('editActivityDescription').value,
+                category: document.getElementById('editActivityCategory').value,
+                startTime: document.getElementById('editActivityStartTime').value,
+                endTime: document.getElementById('editActivityEndTime').value,
+                location: document.getElementById('editActivityLocation').value,
+                maxParticipants: parseInt(document.getElementById('editActivityMaxParticipants').value),
+                requireApproval: document.getElementById('editActivityRequireApproval').checked
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/activities/${activityId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (response.ok) {
+                    alert('Cập nhật hoạt động thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('editActivityModal')).hide();
+                    loadMyActivities();
+                    loadDashboard();
+                } else {
+                    const error = await response.text();
+                    alert('Lỗi cập nhật hoạt động: ' + error);
+                }
+            } catch (error) {
+                console.error('Error updating activity:', error);
+                alert('Lỗi kết nối');
+            }
+        }
+
+        function loadNotifications() {
+            const container = document.getElementById('notifications');
+            container.innerHTML = `
+                <div class="text-center py-3">
+                    <i class="fas fa-bell fa-2x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Không có thông báo mới</p>
+                </div>
+            `;
+        }
+
+        async function loadReports() {
+            try {
+                // Load activity statistics
+                const activitiesResponse = await fetch(`${API_BASE_URL}/activities/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (activitiesResponse.ok) {
+                    const activities = await activitiesResponse.json();
+                    
+                    // Prepare data for charts
+                    const categoryStats = {};
+                    const monthlyStats = {};
+                    
+                    activities.forEach(activity => {
+                        // Category statistics
+                        const category = activity.category || 'Khác';
+                        categoryStats[category] = (categoryStats[category] || 0) + 1;
+                        
+                        // Monthly statistics
+                        const month = new Date(activity.createdAt).toLocaleDateString('vi-VN', { month: 'short' });
+                        monthlyStats[month] = (monthlyStats[month] || 0) + 1;
+                    });
+                    
+                    // Create activity chart
+                    const activityCtx = document.getElementById('activityChart');
+                    if (activityCtx) {
+                        // Destroy existing chart if it exists
+                        if (activityChart) {
+                            activityChart.destroy();
+                        }
+                        activityChart = new Chart(activityCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: Object.keys(categoryStats),
+                                datasets: [{
+                                    data: Object.values(categoryStats),
+                                    backgroundColor: [
+                                        '#FF6384',
+                                        '#36A2EB',
+                                        '#FFCE56',
+                                        '#4BC0C0',
+                                        '#9966FF'
+                                    ]
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'bottom'
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Create participation chart
+                    const participationCtx = document.getElementById('participationChart');
+                    if (participationCtx) {
+                        // Destroy existing chart if it exists
+                        if (participationChart) {
+                            participationChart.destroy();
+                        }
+                        participationChart = new Chart(participationCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: Object.keys(monthlyStats),
+                                datasets: [{
+                                    label: 'Số hoạt động',
+                                    data: Object.values(monthlyStats),
+                                    backgroundColor: '#667eea'
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                // Load registration statistics
+                const registrationsResponse = await fetch(`${API_BASE_URL}/registrations/pending`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (registrationsResponse.ok) {
+                    const registrations = await registrationsResponse.json();
+                    
+                    // Add registration statistics to the page
+                    const statsContainer = document.getElementById('reportsSection');
+                    const statsHtml = `
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <h5>${activities.length}</h5>
+                                        <p class="mb-0">Tổng hoạt động</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-warning text-white">
+                                    <div class="card-body">
+                                        <h5>${registrations.length}</h5>
+                                        <p class="mb-0">Chờ duyệt</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5>${activities.filter(a => a.status === 'Open').length}</h5>
+                                        <p class="mb-0">Đang diễn ra</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h5>${activities.filter(a => a.status === 'Completed').length}</h5>
+                                        <p class="mb-0">Đã hoàn thành</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Insert stats before the charts
+                    const chartsRow = statsContainer.querySelector('.row');
+                    if (chartsRow) {
+                        chartsRow.insertAdjacentHTML('beforebegin', statsHtml);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading reports:', error);
+            }
+        }
+
+        // Initialize
+        checkAuth();
+        loadDashboard();
+    </script>
+</body>
+</html> 

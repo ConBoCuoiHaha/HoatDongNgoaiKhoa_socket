@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Hệ thống quản lý hoạt động ngoại khóa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 2px 10px;
+            transition: all 0.3s ease;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+        .main-content {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        .activity-card {
+            transition: transform 0.2s ease;
+        }
+        .activity-card:hover {
+            transform: translateY(-2px);
+        }
+        .btn-action {
+            border-radius: 8px;
+            padding: 6px 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="p-3">
+                    <div class="d-flex align-items-center mb-4">
+                        <i class="fas fa-graduation-cap fa-2x me-2"></i>
+                        <h5 class="mb-0">EduActivity</h5>
+                    </div>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('activities')">
+                            <i class="fas fa-calendar-alt me-2"></i>Hoạt động có sẵn
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('registrations')">
+                            <i class="fas fa-user-check me-2"></i>Đăng ký của tôi
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('history')">
+                            <i class="fas fa-history me-2"></i>Lịch sử tham gia
+                        </a>
+                    </nav>
+                </div>
+                <div class="mt-auto p-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-user-circle fa-2x me-2"></i>
+                        <div>
+                            <div id="studentName">Student</div>
+                            <small class="text-muted">Học sinh</small>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-light btn-sm w-100" onclick="logout()">
+                        <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="p-4">
+                    <!-- Dashboard Section -->
+                    <div id="dashboardSection">
+                        <h2 class="mb-4">Dashboard Học sinh</h2>
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="myRegistrations">0</h3>
+                                                <p class="mb-0">Đăng ký của tôi</p>
+                                            </div>
+                                            <i class="fas fa-user-check fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="availableActivities">0</h3>
+                                                <p class="mb-0">Hoạt động có sẵn</p>
+                                            </div>
+                                            <i class="fas fa-calendar-plus fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="completedActivities">0</h3>
+                                                <p class="mb-0">Đã hoàn thành</p>
+                                            </div>
+                                            <i class="fas fa-check-circle fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card stats-card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <h3 id="pendingApprovals">0</h3>
+                                                <p class="mb-0">Chờ duyệt</p>
+                                            </div>
+                                            <i class="fas fa-clock fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activities -->
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Hoạt động sắp diễn ra</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="upcomingActivities">
+                                            <!-- Activities will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Đăng ký gần đây</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="recentRegistrations">
+                                            <!-- Recent registrations will be loaded here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Activities Section -->
+                    <div id="activitiesSection" style="display: none;">
+                        <h2 class="mb-4">Hoạt động có sẵn</h2>
+                        <div class="row" id="activitiesContainer">
+                            <!-- Activities will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- My Registrations Section -->
+                    <div id="registrationsSection" style="display: none;">
+                        <h2 class="mb-4">Đăng ký của tôi</h2>
+                        <ul class="nav nav-tabs mb-3" id="registrationTabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" data-bs-toggle="tab" href="#approvedTab">Đã duyệt</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#pendingTab">Chờ duyệt</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-bs-toggle="tab" href="#completedTab">Đã hoàn thành</a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="approvedTab">
+                                <div class="row" id="approvedRegistrations">
+                                    <!-- Approved registrations will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="pendingTab">
+                                <div class="row" id="pendingRegistrations">
+                                    <!-- Pending registrations will be loaded here -->
+                                </div>
+                            </div>
+                            <div class="tab-pane fade" id="completedTab">
+                                <div class="row" id="completedRegistrations">
+                                    <!-- Completed registrations will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Section -->
+                    <div id="historySection" style="display: none;">
+                        <h2 class="mb-4">Lịch sử tham gia</h2>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Hoạt động</th>
+                                                <th>Thời gian</th>
+                                                <th>Trạng thái</th>
+                                                <th>Điểm</th>
+                                                <th>Thao tác</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historyTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = 'http://localhost:8081/api';
+        let currentUser = null;
+        let authToken = null;
+
+        // Check authentication
+        function checkAuth() {
+            authToken = localStorage.getItem('authToken');
+            currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            
+            if (!authToken || currentUser.role !== 'Student') {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            document.getElementById('studentName').textContent = currentUser.fullName || 'Student';
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        }
+
+        function showSection(sectionName) {
+            // Hide all sections
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('activitiesSection').style.display = 'none';
+            document.getElementById('registrationsSection').style.display = 'none';
+            document.getElementById('historySection').style.display = 'none';
+            
+            // Show selected section
+            document.getElementById(sectionName + 'Section').style.display = 'block';
+            
+            // Update active nav link
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Load section data
+            switch(sectionName) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'activities':
+                    loadAvailableActivities();
+                    break;
+                case 'registrations':
+                    loadMyRegistrations();
+                    break;
+                case 'history':
+                    loadHistory();
+                    break;
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                // Load statistics
+                const statsResponse = await fetch(`${API_BASE_URL}/registrations/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (statsResponse.ok) {
+                    const registrations = await statsResponse.json();
+                    document.getElementById('myRegistrations').textContent = registrations.length || 0;
+                    document.getElementById('pendingApprovals').textContent = registrations.filter(r => r.status === 'Pending').length || 0;
+                    document.getElementById('completedActivities').textContent = registrations.filter(r => r.status === 'Completed').length || 0;
+                }
+
+                // Load available activities count
+                const activitiesResponse = await fetch(`${API_BASE_URL}/activities`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (activitiesResponse.ok) {
+                    const activities = await activitiesResponse.json();
+                    document.getElementById('availableActivities').textContent = activities.length || 0;
+                }
+
+                // Load upcoming activities
+                const upcomingResponse = await fetch(`${API_BASE_URL}/activities`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (upcomingResponse.ok) {
+                    const activities = await upcomingResponse.json();
+                    const upcomingContainer = document.getElementById('upcomingActivities');
+                    upcomingContainer.innerHTML = activities.slice(0, 5).map(activity => `
+                        <div class="d-flex justify-content-between align-items-center p-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">${activity.title}</h6>
+                                <small class="text-muted">${new Date(activity.startTime).toLocaleString('vi-VN')}</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="registerForActivity(${activity.id})">
+                                <i class="fas fa-plus me-1"></i>Đăng ký
+                            </button>
+                        </div>
+                    `).join('');
+                }
+
+                // Load recent registrations
+                loadRecentRegistrations();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadAvailableActivities() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/activities`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const activities = await response.json();
+                    const container = document.getElementById('activitiesContainer');
+                    container.innerHTML = activities.map(activity => `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card activity-card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">${activity.title}</h5>
+                                    <p class="card-text text-muted">${activity.description ? activity.description.substring(0, 100) + '...' : 'Không có mô tả'}</p>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            ${new Date(activity.startTime).toLocaleDateString('vi-VN')}
+                                        </small>
+                                        <span class="badge bg-${activity.status === 'Active' ? 'success' : 'secondary'}">${activity.status}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-users me-1"></i>
+                                            ${activity.currentParticipants}/${activity.maxParticipants}
+                                        </small>
+                                        <button class="btn btn-primary btn-sm" onclick="registerForActivity(${activity.id})">
+                                            <i class="fas fa-plus me-1"></i>Đăng ký
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading activities:', error);
+            }
+        }
+
+        async function loadMyRegistrations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const registrations = await response.json();
+                    
+                    // Load approved registrations
+                    const approved = registrations.filter(r => r.status === 'Approved');
+                    document.getElementById('approvedRegistrations').innerHTML = approved.map(reg => `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">${reg.activity?.title || 'Không có tiêu đề'}</h6>
+                                    <p class="card-text text-muted">Hoạt động ${reg.activity?.category || 'ngoại khóa'}</p>
+                                    <small class="text-muted">Đăng ký: ${new Date(reg.registrationTime).toLocaleDateString('vi-VN')}</small>
+                                    <div class="mt-2">
+                                        <button class="btn btn-outline-danger btn-sm" onclick="cancelRegistration(${reg.id})">
+                                            <i class="fas fa-times me-1"></i>Hủy đăng ký
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Load pending registrations
+                    const pending = registrations.filter(r => r.status === 'Pending');
+                    document.getElementById('pendingRegistrations').innerHTML = pending.map(reg => `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">${reg.activity?.title || 'Không có tiêu đề'}</h6>
+                                    <p class="card-text text-muted">Hoạt động ${reg.activity?.category || 'ngoại khóa'}</p>
+                                    <small class="text-muted">Đăng ký: ${new Date(reg.registrationTime).toLocaleDateString('vi-VN')}</small>
+                                    <div class="mt-2">
+                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Load completed registrations
+                    const completed = registrations.filter(r => r.status === 'Completed');
+                    document.getElementById('completedRegistrations').innerHTML = completed.map(reg => `
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">${reg.activity?.title || 'Không có tiêu đề'}</h6>
+                                    <p class="card-text text-muted">Hoạt động ${reg.activity?.category || 'ngoại khóa'}</p>
+                                    <small class="text-muted">Hoàn thành: ${new Date(reg.registrationTime).toLocaleDateString('vi-VN')}</small>
+                                    <div class="mt-2">
+                                        <span class="badge bg-success">Đã hoàn thành</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading registrations:', error);
+            }
+        }
+
+        async function registerForActivity(activityId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ActivityId: activityId })
+                });
+                
+                if (response.ok) {
+                    alert('Đăng ký thành công!');
+                    loadDashboard();
+                    loadAvailableActivities();
+                } else {
+                    const error = await response.text();
+                    alert('Lỗi đăng ký: ' + error);
+                }
+            } catch (error) {
+                console.error('Error registering:', error);
+                alert('Lỗi kết nối');
+            }
+        }
+
+        async function cancelRegistration(registrationId) {
+            if (!confirm('Bạn có chắc chắn muốn hủy đăng ký này?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/${registrationId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    alert('Đã hủy đăng ký');
+                    loadMyRegistrations();
+                    loadDashboard();
+                } else {
+                    const error = await response.text();
+                    alert('Lỗi hủy đăng ký: ' + error);
+                }
+            } catch (error) {
+                console.error('Error canceling registration:', error);
+                alert('Lỗi kết nối');
+            }
+        }
+
+        async function loadRecentRegistrations() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const registrations = await response.json();
+                    const container = document.getElementById('recentRegistrations');
+                    container.innerHTML = registrations.slice(0, 3).map(reg => `
+                        <div class="d-flex align-items-center p-2 border-bottom">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">${reg.activity?.title || 'Không có tiêu đề'}</h6>
+                                <small class="text-muted">${new Date(reg.registrationTime).toLocaleDateString('vi-VN')}</small>
+                            </div>
+                            <span class="badge bg-${reg.status === 'Approved' ? 'success' : reg.status === 'Pending' ? 'warning' : 'secondary'}">${reg.status}</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading recent registrations:', error);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/registrations/my`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const registrations = await response.json();
+                    const tbody = document.getElementById('historyTableBody');
+                    
+                    if (registrations.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Chưa có lịch sử tham gia</td></tr>';
+                        return;
+                    }
+                    
+                    tbody.innerHTML = registrations.map(reg => `
+                        <tr>
+                            <td>${reg.activity?.title || 'Không có tiêu đề'}</td>
+                            <td>${new Date(reg.activity?.startTime).toLocaleString('vi-VN')}</td>
+                            <td><span class="badge bg-${reg.status === 'Approved' ? 'success' : reg.status === 'Pending' ? 'warning' : reg.status === 'Completed' ? 'info' : 'secondary'}">${reg.status}</span></td>
+                            <td>${reg.score || '-'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="viewActivityDetails(${reg.activity?.id})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        function viewActivityDetails(activityId) {
+            // Fetch activity details and show modal
+            fetch(`${API_BASE_URL}/activities/${activityId}`, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            })
+            .then(response => response.json())
+            .then(activity => {
+                const modal = `
+                    <div class="modal fade" id="viewActivityDetailsModal" tabindex="-1">
+                        <div class="modal-dialog modal-lg">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Chi tiết hoạt động</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <h4>${activity.title}</h4>
+                                            <p class="text-muted">${activity.description || 'Không có mô tả'}</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <span class="badge bg-${activity.status === 'Active' ? 'success' : 'secondary'}">${activity.status}</span>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Danh mục:</strong> ${activity.category}</p>
+                                            <p><strong>Địa điểm:</strong> ${activity.location}</p>
+                                            <p><strong>Thời gian bắt đầu:</strong> ${new Date(activity.startTime).toLocaleString('vi-VN')}</p>
+                                            <p><strong>Thời gian kết thúc:</strong> ${new Date(activity.endTime).toLocaleString('vi-VN')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Số người tham gia:</strong> ${activity.currentParticipants}/${activity.maxParticipants}</p>
+                                            <p><strong>Yêu cầu phê duyệt:</strong> ${activity.requireApproval ? 'Có' : 'Không'}</p>
+                                            <p><strong>Ngày tạo:</strong> ${new Date(activity.createdAt).toLocaleDateString('vi-VN')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing modal if any
+                const existingModal = document.getElementById('viewActivityDetailsModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // Add modal to body
+                document.body.insertAdjacentHTML('beforeend', modal);
+                
+                // Show modal
+                const modalElement = new bootstrap.Modal(document.getElementById('viewActivityDetailsModal'));
+                modalElement.show();
+            })
+            .catch(error => {
+                console.error('Error loading activity:', error);
+                alert('Lỗi tải thông tin hoạt động');
+            });
+        }
+
+        // Initialize
+        checkAuth();
+        loadDashboard();
+    </script>
+</body>
+</html> 
